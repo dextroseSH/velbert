@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<!DOCTYPE config SYSTEM "http://www.matsim.org/files/dtd/config_v2.dtd">
+<config>
+    <module name="global">
+        <param name="randomSeed" value="4711"/>
+        <param name="coordinateSystem" value="EPSG:25832"/>
+        <param name="numberOfThreads" value="12"/>
+    </module>
+    <module name="controler">
+        <param name="lastIteration" value="500"/>
+        <param name="overwriteFiles" value="deleteDirectoryIfExists"/>
+        <param name="runId" value="matsim-velbert-v1.1"/>
+        <param name="outputDirectory" value="../output/"/>
+        <param name="writeEventsInterval" value="50"/>
+        <param name="writePlansInterval" value="50"/>
+    </module>
+    <module name="qsim">
+        <param name="endTime" value="36:00:00"/>
+        <param name="flowCapacityFactor" value="0.1"/>
+        <param name="mainMode" value="car"/>
+        <param name="numberOfThreads" value="12"/>
+        <param name="startTime" value="00:00:00"/>
+        <param name="storageCapacityFactor" value="0.1"/>
+        <param name="stuckTime" value="30.0"/>
+        <param name="trafficDynamics" value="queue"/>
+        <param name="vehiclesSource" value="modeVehicleTypesFromVehiclesData"/>
+        <param name="insertingWaitingVehiclesBeforeDrivingVehicles" value="true"/>
+        <param name="usePersonIdForMissingVehicleId" value="false"/>
+    </module>
+    <module name="network">
+        <param name="inputNetworkFile"
+               value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/velbert/velbert-v1.0/input/matsim-velbert-v1.0.network.xml.gz"/>
+    </module>
+    <module name="plans">
+        <param name="inputPlansFile" value="matsim-velbert-v1.1-10pct.plans.xml.gz"/>
+    </module>
+    <module name="vehicles">
+        <param name="vehiclesFile"
+               value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/velbert/velbert-v1.0/input/matsim-velbert-v1.0.vehicles.xml.gz"/>
+    </module>
+    <module name="transit">
+        <param name="transitScheduleFile"
+               value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/velbert/velbert-v1.0/input/matsim-velbert-v1.0.transit-schedule.xml.gz"/>
+        <param name="useTransit" value="true"/>
+        <param name="vehiclesFile"
+               value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/velbert/velbert-v1.0/input/matsim-velbert-v1.0.transit-vehicles.xml.gz"/>
+    </module>
+    <module name="transitRouter">
+        <param name="extensionRadius" value="500.0"/>
+        <!-- Factor with which direct walk generalized cost is multiplied before it is compared to the pt generalized cost.  Set to a very high value to reduce direct walk results. -->
+        <param name="directWalkFactor" value="1.0"/>
+        <!-- maximum beeline distance between stops that agents could transfer to by walking -->
+        <param name="maxBeelineWalkConnectionDistance" value="300.0"/>
+    </module>
+    <module name="planscalcroute">
+        <param name="networkModes" value="car,ride"/>
+        <param name="clearDefaultTeleportedModeParams" value="true"/>
+        <parameterset type="teleportedModeParameters">
+            <param name="beelineDistanceFactor" value="1.4"/>
+            <param name="mode" value="walk"/>
+            <param name="teleportedModeFreespeedFactor" value="null"/>
+            <param name="teleportedModeSpeed" value="1.1111111111111112"/>
+        </parameterset>
+        <parameterset type="teleportedModeParameters">
+            <param name="beelineDistanceFactor" value="1.4"/>
+            <param name="mode" value="bike"/>
+            <param name="teleportedModeFreespeedFactor" value="null"/>
+            <param name="teleportedModeSpeed" value="3.0555555555555554"/>
+        </parameterset>
+    </module>
+    <module name="travelTimeCalculator">
+        <param name="analyzedModes" value="car"/>
+        <param name="separateModes" value="true"/>
+    </module>
+    <module name="planCalcScore">
+        <param name="fractionOfIterationsToStartScoreMSA" value="1.0"/>
+        <parameterset type="scoringParameters">
+            <parameterset type="modeParams">
+                <param name="constant" value="-1.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-1.5"/>
+                <param name="mode" value="pt"/>
+                <param name="dailyMonetaryConstant" value="-2.3"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="-1.5"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="0"/>
+                <param name="mode" value="car"/>
+                <param name="monetaryDistanceRate" value="-0.0002"/>
+                <param name="dailyMonetaryConstant" value="-5.3"/>
+            </parameterset>
+            <!-- fixed, so no asc -->
+            <parameterset type="modeParams">
+                <param name="constant" value="0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="0"/>
+                <param name="mode" value="ride"/>
+                <param name="monetaryDistanceRate" value="-0.0002"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="0.0"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-1.5"/>
+                <param name="mode" value="walk"/>
+            </parameterset>
+            <parameterset type="modeParams">
+                <param name="constant" value="-0.75"/>
+                <param name="marginalUtilityOfTraveling_util_hr" value="-6.5"/>
+                <param name="mode" value="bike"/>
+            </parameterset>
+        </parameterset>
+    </module>
+    <module name="strategy">
+        <param name="fractionOfIterationsToDisableInnovation" value="0.8"/>
+        <parameterset type="strategysettings">
+            <param name="strategyName" value="ChangeExpBeta"/>
+            <param name="weight" value="0.7"/>
+            <param name="subpopulation" value="person"/>
+        </parameterset>
+        <parameterset type="strategysettings">
+            <param name="strategyName" value="ReRoute"/>
+            <param name="weight" value="0.1"/>
+            <param name="subpopulation" value="person"/>
+        </parameterset>
+        <!-- we use ChangeSingleTripMode here because SubtourModeChoice didn't seem to work due to the high number of
+        plans which don't have home as last activity -->
+        <parameterset type="strategysettings">
+            <param name="strategyName" value="ChangeSingleTripMode"/>
+            <param name="weight" value="0.15"/>
+            <param name="subpopulation" value="person"/>
+        </parameterset>
+        <parameterset type="strategysettings">
+            <param name="strategyName" value="TimeAllocationMutator"/>
+            <param name="weight" value="0.05"/>
+            <param name="subpopulation" value="person"/>
+        </parameterset>
+    </module>
+    <module name="TimeAllocationMutator">
+        <param name="mutationRange" value="7200.0"/>
+        <param name="mutationAffectsDuration" value="false"/>
+    </module>
+    <module name="changeMode">
+        <!-- provide a comma-separated list of leg modes -->
+        <param name="modes" value="car,pt,bike,walk"/>
+        <param name="ignoreCarAvailability" value="false"/>
+    </module>
+</config>
