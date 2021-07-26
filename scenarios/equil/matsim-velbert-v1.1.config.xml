@@ -28,8 +28,7 @@
         <param name="usePersonIdForMissingVehicleId" value="false"/>
     </module>
     <module name="network">
-        <param name="inputNetworkFile"
-               value="https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/velbert/velbert-v1.0/input/matsim-velbert-v1.0.network.xml.gz"/>
+        <param name="inputNetworkFile" value="matsim-velbert-v1.0.network_mit_strassenbahn.xml"/>
     </module>
     <module name="plans">
         <param name="inputPlansFile" value="matsim-velbert-v1.1-10pct.plans.xml.gz"/>

@@ -19,3 +19,4 @@ hs_err_pid*
 
 /.idea/
 *.iml
+/scenarios/equil/matsim-velbert-v1.0.network_mit_strassenbahn.xml
