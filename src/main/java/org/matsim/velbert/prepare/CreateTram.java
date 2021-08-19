@@ -75,8 +75,8 @@ public class CreateTram {
 		TransitRoute southRoute = createTransitRoute("south", southLinkIds, southDirectionStart, southDirectionEnd);
 
 		List<Id<Link>> northLinkIds = Arrays.stream(NEVIGES_TO_LANGENBERG).map(id -> NetworkUtils.getLinks(network, id).get(0).getId()).collect(Collectors.toList());
-		int northDirectionStart = createNeviges ? 0 : LANGENBERG_TO_NEVIGES.length - VELBERT_ZOB_INDEX;
-		int northDirectionEnd = createLangenberg ? NEVIGES_TO_LANGENBERG.length - 1 : LANGENBERG_TO_NEVIGES.length - VELBERT_ZOB_INDEX - 1;
+		int northDirectionStart = createNeviges ? 0 : NEVIGES_TO_LANGENBERG.length - VELBERT_ZOB_INDEX;
+		int northDirectionEnd = createLangenberg ? NEVIGES_TO_LANGENBERG.length - 1 : NEVIGES_TO_LANGENBERG.length - VELBERT_ZOB_INDEX - 1;
 		TransitRoute northRoute = createTransitRoute("north", northLinkIds, northDirectionStart, northDirectionEnd);
 
 		for (int i = 0; i < 86400; i += frequency * 60) {
@@ -114,7 +114,7 @@ public class CreateTram {
 		List<TransitRouteStop> result = new LinkedList<>();
 		result.add(scheduleFactory.createTransitRouteStop(createStopFacility(linkIds.get(0), true), 0, 0));
 		for (int i = 0; i < linkIds.size(); i++) {
-			result.add(scheduleFactory.createTransitRouteStop(createStopFacility(linkIds.get(i), false), (i + 1) * 240 - 30, (i + 1) * 240));
+			result.add(scheduleFactory.createTransitRouteStop(createStopFacility(linkIds.get(i), false), (i + 1) * 120 - 30, (i + 1) * 120));
 		}
 		return result;
 	}
@@ -133,6 +133,8 @@ public class CreateTram {
 		VehicleType vehicleType = scenario.getVehicles().getFactory().createVehicleType(Id.create("tram", VehicleType.class));
 		vehicleType.setNetworkMode(TransportMode.pt);
 		vehicleType.getCapacity().setStandingRoom(100);
+		vehicleType.getCapacity().setSeats(200);
+		vehicleType.setPcuEquivalents(0.0);
 		scenario.getTransitVehicles().addVehicleType(vehicleType);
 		return vehicleType;
 	}
