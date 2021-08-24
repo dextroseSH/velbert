@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from utils import *
 
 
 def createMatrix(trips_before, trips_after, trips_filtered, output_path):
@@ -26,12 +27,8 @@ def createMatrix(trips_before, trips_after, trips_filtered, output_path):
 
     print(result)
     result_frame = pd.DataFrame(result)
-    result_frame.columns = modes;
+    result_frame.columns = modes
     result_frame.to_csv(output_path, sep=";", index=None)
-
-
-def csv_to_pd(path):
-    return pd.read_csv(path, delimiter=";")
 
 
 path_to_before = "../trips/velbert-v1.0-1pct.output_trips9.csv"
@@ -41,9 +38,6 @@ path_to_filtered_trips = "../../src/main/resources/tripsBetweenVelbertAndEssen.t
 trips_before = csv_to_pd(path_to_before)
 trips_after = csv_to_pd(path_to_after)
 
-with open(path_to_filtered_trips) as f:
-    trips_filtered = f.readlines()
-
-trips_filtered = [t.strip("\n") for t in trips_filtered]
+trips_filtered = get_filtered_trips(path_to_filtered_trips)
 
 createMatrix(trips_before, trips_after, trips_filtered, "res.csv")
