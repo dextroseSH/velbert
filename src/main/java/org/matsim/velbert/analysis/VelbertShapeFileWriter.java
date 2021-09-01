@@ -6,6 +6,7 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.matsim.core.utils.gis.ShapeFileWriter;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -27,11 +28,17 @@ public class VelbertShapeFileWriter {
         var transformation = CRS.findMathTransform(fromCRS, toCRS);
 
         var uri = URI.create(shapeFile);
-        var s = ShapeFileReader.getAllFeatures(uri.toURL()).stream()
+        Set<SimpleFeature> s = ShapeFileReader.getAllFeatures(uri.toURL()).stream()
                 .filter(simpleFeature -> zipCodes.contains((String) simpleFeature.getAttribute("plz")))
+                .map(simpleFeature -> transform(simpleFeature, transformation))
                 .collect(Collectors.toSet());
 
         ShapeFileWriter.writeGeometries(s, "scenarios/equil/drt/velbert.shp");
+    }
+
+    private static SimpleFeature transform(SimpleFeature simpleFeature, MathTransform transformation){
+        simpleFeature.setDefaultGeometry(transform((Geometry) simpleFeature.getDefaultGeometry(), transformation));
+        return simpleFeature;
     }
 
     private static Geometry transform(Geometry geometry, MathTransform transform) {
