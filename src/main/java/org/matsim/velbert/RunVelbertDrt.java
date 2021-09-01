@@ -21,8 +21,10 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.geotools.MGC;
@@ -43,11 +45,12 @@ public class RunVelbertDrt {
 
     private static final String shapeFile = "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/velbert/velbert-v1.0/shapes/Postleitzahlengebiete-shp/OSM_PLZ_072019.shp";
     private static final Set<String> zipCodes = Set.of("42551", "42549", "42555", "42553");
+    private static final String DRT_A = "drt_A";
 
     public static void main(String[] args) throws MalformedURLException, FactoryException {
 
         var config = ConfigUtils.loadConfig(args);
-        config.controler().setLastIteration(10);
+        config.controler().setLastIteration(50);
 
         config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
 
@@ -82,20 +85,34 @@ public class RunVelbertDrt {
 
         {
             DrtConfigGroup drtConfig = new DrtConfigGroup();
-            drtConfig.setMode( TransportMode.pt ).setStopDuration(60.).setMaxWaitTime(900.).setMaxTravelTimeAlpha(1.3).setMaxTravelTimeBeta(10. * 60.);
+            drtConfig.setMode( DRT_A ).setStopDuration(60.).setMaxWaitTime(900.).setMaxTravelTimeAlpha(1.3).setMaxTravelTimeBeta(10. * 60.);
             drtConfig.setRejectRequestIfMaxWaitOrTravelTimeViolated( false );
-            drtConfig.setVehiclesFile("one_shared_taxi_vehicles_A.xml");
+            drtConfig.setVehiclesFile("drtVehicles.xml");
             drtConfig.setChangeStartLinkToLastLinkInSchedule(true);
             drtConfig.addParameterSet( new ExtensiveInsertionSearchParams() );
-            drtConfig.setDrtServiceAreaShapeFile("drt/velbert.shp");
-            drtConfig.setOperationalScheme(DrtConfigGroup.OperationalScheme.stopbased);
-            drtConfig.setTransitStopFile("tramComplete/transitSchedule.xml.gz");
+            drtConfig.setDrtServiceAreaShapeFile("shape/velbert.shp");
+            drtConfig.setOperationalScheme(DrtConfigGroup.OperationalScheme.serviceAreaBased);
             multiModeDrtCfg.addDrtConfig(drtConfig);
         }
 
         for (DrtConfigGroup drtCfg : multiModeDrtCfg.getModalElements()) {
             DrtConfigs.adjustDrtConfig(drtCfg, config.planCalcScore(), config.plansCalcRoute());
         }
+
+        config.strategy().clearStrategySettings();
+        config.strategy().addStrategySettings(new StrategyConfigGroup.StrategySettings().setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.ChangeSingleTripMode).setWeight(0.15).setSubpopulation("person"));
+        config.changeMode().setModes(new String[]{TransportMode.ride, TransportMode.bike, TransportMode.car, TransportMode.pt, DRT_A});
+        config.changeMode().setIgnoreCarAvailability(false);
+
+        config.strategy().addStrategySettings(new StrategyConfigGroup.StrategySettings().setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.TimeAllocationMutator).setWeight(0.05).setSubpopulation("person"));
+        config.timeAllocationMutator().setMutationRange(7200.0);
+        config.timeAllocationMutator().setAffectingDuration(false);
+
+        config.strategy().addStrategySettings(new StrategyConfigGroup.StrategySettings().setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.ReRoute).setWeight(0.1).setSubpopulation("person"));
+
+        config.strategy().addStrategySettings(new StrategyConfigGroup.StrategySettings().setStrategyName(DefaultPlanStrategiesModule.DefaultSelector.ChangeExpBeta).setWeight(0.7).setSubpopulation("person"));
+
+        config.planCalcScore().addModeParams(new PlanCalcScoreConfigGroup.ModeParams(DRT_A));
 
         Scenario scenario = ScenarioUtils.createScenario( config ) ;
         scenario.getPopulation().getFactory().getRouteFactories().setRouteFactory( DrtRoute.class, new DrtRouteFactory() );
@@ -106,7 +123,7 @@ public class RunVelbertDrt {
         controler.addOverridingModule( new DvrpModule() ) ;
         controler.addOverridingModule( new MultiModeDrtModule( ) ) ;
 
-        controler.configureQSimComponents( DvrpQSimComponents.activateModes( TransportMode.pt ) ) ;
+        controler.configureQSimComponents( DvrpQSimComponents.activateModes( DRT_A ) ) ;
 
         // use the (congested) car travel time for the teleported ride mode
         controler.addOverridingModule(new AbstractModule() {
@@ -116,15 +133,6 @@ public class RunVelbertDrt {
                 addTravelDisutilityFactoryBinding(TransportMode.ride).to(carTravelDisutilityFactoryKey());
             }
         });
-
-        // create modal share analysis
-        var dilutionArea = getDilutionArea();
-        var analyzerModule = new TripAnalyzerModule(personId -> {
-            var person = scenario.getPopulation().getPersons().get(personId);
-            var firstActivity = TripStructureUtils.getActivities(person.getSelectedPlan(), TripStructureUtils.StageActivityHandling.ExcludeStageActivities).get(0);
-            return dilutionArea.stream().anyMatch(geometry -> geometry.covers(MGC.coord2Point(firstActivity.getCoord())));
-        });
-        controler.addOverridingModule(analyzerModule);
 
         controler.run();
     }

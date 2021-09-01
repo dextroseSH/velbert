@@ -27,7 +27,7 @@ def analyze_travel_times(trips, trips_filtered, output_path):
     plt.show()
 
 
-path_to_trips = "class-example.output_trips.csv"
+path_to_trips = "../Ablage/class-example.output_trips.csv"
 path_to_filtered_trips = "../src/main/resources/tripsBetweenVelbertAndOutside.txt"
 
 trips = csv_to_pd(path_to_trips)
