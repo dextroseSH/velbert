@@ -4,17 +4,23 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.events.EventsUtils;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 
 public class TramAnalysis {
     public static void main(String[] args) throws FileNotFoundException {
         EventsManager manager = EventsUtils.createEventsManager();
-        TramEventHandler handler = new TramEventHandler();
 
-        manager.addHandler(handler);
+        List<VelbertScenario> l = Arrays.asList(VelbertScenario.LANGENBERG);//, VelbertScenario.NEVIGES, VelbertScenario.COMPLETE);
 
-        EventsUtils.readEvents(manager, "C:\\Users\\paulh\\git\\Uni\\MatSim\\velbert\\Ablage\\class-example.output_events.xml.gz");
+        for(VelbertScenario s : l){
+            TramEventHandler handler = new TramEventHandler(s);
 
-        handler.printCounter();
+            manager.addHandler(handler);
 
+            EventsUtils.readEvents(manager, "C:\\Users\\paulh\\git\\Uni\\MatSim\\velbert\\analysis\\tramOutput\\" + s.folderName + "\\class-example.output_events.xml.gz");
+
+            handler.printCounter();
+        }
     }
 }

@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 
 public class ExportTrips implements ActivityEndEventHandler, ActivityStartEventHandler {
 
-	private static final String pathToEventsFile = "src/main/resources/velbert-v1.0-1pct.output_events.xml";
+	private static final String pathToEventsFile = "C:\\Users\\paulh\\git\\Uni\\MatSim\\velbert\\analysis\\tramOutput\\null\\class-example.output_events.xml.gz";
 	private static final String shapeFile = "src/main/resources/OSM_PLZ_072019.shp";
 	private static final List<String> PLZ_VELBERT = Arrays.asList("42549", "42551", "42553", "42555");
 	private static final List<String> PLZ_WUPPERTAL = new LinkedList<>();

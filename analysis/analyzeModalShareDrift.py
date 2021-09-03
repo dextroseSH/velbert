@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+import math
 from utils import *
 
 
@@ -16,12 +16,12 @@ def createMatrix(trips_before, trips_after, trips_filtered, output_path):
 
     result = np.zeros((5, 5))
     for i, r in all_trips.iterrows():
-        mode_before = r["longest_distance_mode_before"]
-        mode_after = r["longest_distance_mode_after"]
+        mode_before = str(r["longest_distance_mode_before"])
+        mode_after = str(r["longest_distance_mode_after"])
 
-        if mode_before is None or mode_after is None:
+        if mode_before is None or mode_after is None or mode_before == "nan" or mode_after == "nan":
             continue
-        assert mode_after in modes and mode_before in modes
+        assert mode_after in modes and mode_before in modes, f"mode_after: {mode_after}, mode before: {mode_before}"
 
         result[modes.index(mode_before), modes.index(mode_after)] += 1
 
@@ -31,13 +31,21 @@ def createMatrix(trips_before, trips_after, trips_filtered, output_path):
     result_frame.to_csv(output_path, sep=";", index=None)
 
 
-path_to_before = "../trips/velbert-v1.0-1pct.output_trips9.csv"
-path_to_after = "../trips/velbert-v1.0-1pct.output_trips122.csv"
-path_to_filtered_trips = "../../src/main/resources/tripsBetweenVelbertAndEssen.txt"
+path_to_before = "tramOutput/null/class-example.output_trips.csv"
 
-trips_before = csv_to_pd(path_to_before)
-trips_after = csv_to_pd(path_to_after)
+trips_between_locations = ["Wuppertal", "Essen", "Outside"]
+scenarios = ["langenbergOnly", "nevigesOnly", "complete"]
 
-trips_filtered = get_filtered_trips(path_to_filtered_trips)
+for s in scenarios:
+    for t in trips_between_locations:
+        path_to_after = f"tramOutput/{s}/class-example.output_trips.csv"
+        path_to_filtered_trips = f"tramOutput/null/tripsBetweenVelbertAnd{t}.txt"
+        path_to_result_file = f"tramOutput/{s}/tripsBetweenVelbertAnd{t}Matrix.csv"
 
-createMatrix(trips_before, trips_after, trips_filtered, "res.csv")
+        trips_before = csv_to_pd(path_to_before)
+        trips_after = csv_to_pd(path_to_after)
+
+        trips_filtered = get_filtered_trips(path_to_filtered_trips)
+
+        createMatrix(trips_before, trips_after, trips_filtered, path_to_result_file)
+
