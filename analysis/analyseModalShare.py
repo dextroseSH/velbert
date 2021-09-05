@@ -28,7 +28,7 @@ for s in scenarios:
 
     stat = trips.groupby(["longest_distance_mode"]).count()["trip_id"] / number_of_trips
     print(stat)
-    stat.to_csv("test.csv", sep=";")
+    stat.to_csv(f"tramOutput/{s}/modalShare.csv", sep=";")
 
     modal_share = dict([(m, stat[m]) for m in modes_full])
 
